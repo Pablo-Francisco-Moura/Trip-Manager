@@ -35,9 +35,7 @@ class TravelRequestController extends Controller
 
     public function show(Request $request, TravelRequest $travelRequest)
     {
-        if ($request->user()->id !== $travelRequest->user_id) {
-            return response()->json(['message' => 'Não autorizado'], 403);
-        }
+        $this->authorize('view', $travelRequest);
 
         return response()->json($travelRequest);
     }
@@ -54,11 +52,7 @@ class TravelRequestController extends Controller
 
     public function updateStatus(UpdateTravelRequestStatus $request, TravelRequest $travelRequest)
     {
-        $user = $request->user();
-
-        if (! $user->is_admin) {
-            return response()->json(['message' => 'Somente administradores podem alterar o status.'], 403);
-        }
+        $this->authorize('updateStatus', $travelRequest);
 
         $newStatus = $request->input('status');
 
