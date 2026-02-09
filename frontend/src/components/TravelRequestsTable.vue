@@ -1,7 +1,8 @@
 <template>
   <div>
     <h3>Requests</h3>
-    <table border="1" cellpadding="6">
+    <div v-if="loading">Loading...</div>
+    <table v-else border="1" cellpadding="6">
       <thead>
         <tr>
           <th>ID</th>
@@ -10,6 +11,7 @@
           <th>Return</th>
           <th>Status</th>
           <th>Actions</th>
+          import { addToast } from '../stores/ui'
         </tr>
       </thead>
       <tbody>
@@ -20,10 +22,20 @@
           <td>{{ r.return_date }}</td>
           <td>{{ r.status }}</td>
           <td>
-            <button v-if="isAdmin" @click="updateStatus(r.id, 'approved')">
-              Approve
+            <button
+              v-if="isAdmin"
+              @click="updateStatus(r.id, 'approved')"
+              :disabled="updatingId === r.id"
+            >
+              {{ updatingId === r.id ? "Updating..." : "Approve" }}
             </button>
-            <button @click="updateStatus(r.id, 'canceled')">Cancel</button>
+            <button
+              @click="updateStatus(r.id, 'canceled')"
+                  addToast('Status atualizado', 'success');
+                  this.fetch();
+            >
+                  addToast(e.response?.data?.message || "Error updating status", 'error');
+            </button>
           </td>
         </tr>
       </tbody>

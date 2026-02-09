@@ -8,6 +8,7 @@
     </div>
     <TravelRequestForm @created="reload" />
     <TravelRequestsTable ref="table" />
+    <Toast />
   </div>
 </template>
 
@@ -15,9 +16,10 @@
 import TravelRequestForm from "../components/TravelRequestForm.vue";
 import TravelRequestsTable from "../components/TravelRequestsTable.vue";
 import auth from "../services/auth";
+import Toast from "../components/Toast.vue";
 
 export default {
-  components: { TravelRequestForm, TravelRequestsTable },
+  components: { TravelRequestForm, TravelRequestsTable, Toast },
   methods: {
     reload() {
       this.$refs.table.fetch();

@@ -13,6 +13,7 @@
 
 <script>
 import axios from "axios";
+import { addToast } from "../stores/ui";
 export default {
   data() {
     return {
@@ -33,12 +34,15 @@ export default {
           return_date: this.return_date,
         });
         this.message = "Created";
+        addToast("Pedido criado com sucesso", "success");
         this.destination = "";
         this.departure_date = "";
         this.return_date = "";
         this.$emit("created");
       } catch (e) {
-        this.message = e.response?.data?.message || "Error creating request";
+        const msg = e.response?.data?.message || "Error creating request";
+        this.message = msg;
+        addToast(msg, "error");
       } finally {
         this.loading = false;
       }
@@ -46,3 +50,25 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+input {
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+button {
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  border: 1px solid #888;
+  background: #fff;
+}
+.loading {
+  opacity: 0.6;
+}
+</style>
