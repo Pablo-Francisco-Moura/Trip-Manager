@@ -3,7 +3,7 @@
     <h3>Requests</h3>
     <div class="filter-row">
       <label>Filter:</label>
-      <select v-model="filterStatus" @change="fetch">
+      <select class="filter-select" v-model="filterStatus" @change="fetch">
         <option value="">All</option>
         <option value="requested">Requested</option>
         <option value="approved">Approved</option>
@@ -137,6 +137,21 @@ button {
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 0.5rem;
+}
+
+/* Filter control styled like a compact button */
+.filter-select {
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  border: 1px solid #d7e3ff;
+  background: linear-gradient(180deg, #f8fbff, #eef6ff);
+  cursor: pointer;
+  font-weight: 600;
+  color: #123a8a;
+}
+.filter-row label {
+  font-weight: 700;
+  color: #123a8a;
 }
 .table-wrap {
   overflow-x: auto;
