@@ -79,6 +79,15 @@ Variáveis de ambiente principais
 - `APP_ENV`, `APP_DEBUG`, `DB_CONNECTION`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD` (backend)
 - `VITE_API_BASE_URL` (frontend) — URL base da API (no compose está `http://backend:8000`).
 
+## Default demo credentials
+
+Para facilitar testes rápidos, use as credenciais abaixo para efetuar login na aplicação de desenvolvimento:
+
+- Email: pablo@example.com
+- Senha: secret
+
+Estas credenciais são criadas por script de seed ou podem ser registradas via endpoint `/api/register` conforme indicado acima.
+
 Notas
 
 - A API usa Sanctum para autenticação via tokens pessoais; veja `backend/README.md` para detalhes.

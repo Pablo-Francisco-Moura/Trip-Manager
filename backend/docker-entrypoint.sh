@@ -13,6 +13,25 @@ if [ ! -f .env ]; then
   fi
 fi
 
+# If .env exists but appears configured for sqlite (local dev), prefer docker example DB settings
+if [ -f .env ] && [ -f .env.docker.example ]; then
+  # Read current DB_CONNECTION
+  CUR_DB_CONN=$(grep '^DB_CONNECTION=' .env | cut -d'=' -f2- | tr -d '\r') || CUR_DB_CONN=""
+  if [ "$CUR_DB_CONN" = "sqlite" ]; then
+    echo "Detected sqlite in .env; applying docker DB settings from .env.docker.example"
+    # Overwrite DB_* and APP_URL/SANCTUM settings from the docker example into .env
+    for key in DB_CONNECTION DB_HOST DB_PORT DB_DATABASE DB_USERNAME DB_PASSWORD APP_URL SANCTUM_STATEFUL_DOMAINS SESSION_DOMAIN; do
+      val=$(grep "^${key}=" .env.docker.example | cut -d'=' -f2-)
+      if [ -n "$val" ]; then
+        # remove existing key from .env
+        sed -i "/^${key}=/d" .env || true
+        # append new value
+        echo "${key}=${val}" >> .env
+      fi
+    done
+  fi
+fi
+
 # Install composer dependencies if not present
 if [ ! -f vendor/autoload.php ]; then
   echo "Installing composer dependencies..."
@@ -24,6 +43,22 @@ APP_KEY=$(grep '^APP_KEY=' .env 2>/dev/null | cut -d'=' -f2- | tr -d '\r') || AP
 if [ -z "$APP_KEY" ]; then
   echo "Generating APP_KEY..."
   php artisan key:generate --ansi
+fi
+
+# If using sqlite and database file missing, create it so migrations/validation won't error
+DB_CONN=$(grep '^DB_CONNECTION=' .env 2>/dev/null | cut -d'=' -f2- | tr -d '\r') || DB_CONN=""
+if [ "$DB_CONN" = "sqlite" ]; then
+  DB_FILE=$(grep '^DB_DATABASE=' .env 2>/dev/null | cut -d'=' -f2- | tr -d '\r') || DB_FILE="database/database.sqlite"
+  # If DB_DATABASE is empty or a relative path, default to database/database.sqlite
+  if [ -z "$DB_FILE" ]; then
+    DB_FILE="database/database.sqlite"
+  fi
+  # make sure directory exists
+  mkdir -p "$(dirname "$DB_FILE")"
+  if [ ! -f "$DB_FILE" ]; then
+    touch "$DB_FILE" || true
+    echo "Created sqlite database file at $DB_FILE"
+  fi
 fi
 
 # Publish Sanctum (idempotent)
