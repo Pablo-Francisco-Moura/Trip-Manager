@@ -1,18 +1,34 @@
 <template>
-  <div style="max-width: 400px; margin: 2rem auto">
-    <h2>Login</h2>
-    <form @submit.prevent="submit">
-      <div>
-        <label>Email</label>
-        <input v-model="email" type="email" />
-      </div>
-      <div>
-        <label>Password</label>
-        <input v-model="password" type="password" />
-      </div>
-      <button type="submit">Login</button>
-    </form>
-    <p v-if="error" style="color: red">{{ error }}</p>
+  <div class="login-wrap">
+    <div class="login-card">
+      <h2 class="login-title">Login</h2>
+      <form @submit.prevent="submit" class="login-form">
+        <div class="field">
+          <label class="field-label">Email</label>
+          <input
+            class="field-input"
+            v-model="email"
+            type="email"
+            autocomplete="username"
+          />
+        </div>
+        <div class="field">
+          <label class="field-label">Password</label>
+          <input
+            class="field-input"
+            v-model="password"
+            type="password"
+            autocomplete="current-password"
+          />
+        </div>
+        <div class="actions">
+          <button class="btn" :disabled="loading" type="submit">
+            {{ loading ? "Logging..." : "Login" }}
+          </button>
+        </div>
+      </form>
+      <p v-if="error" class="error">{{ error }}</p>
+    </div>
   </div>
 </template>
 
@@ -20,10 +36,12 @@
 import axios from "axios";
 export default {
   data() {
-    return { email: "", password: "", error: null };
+    return { email: "", password: "", error: null, loading: false };
   },
   methods: {
     async submit() {
+      this.error = null;
+      this.loading = true;
       try {
         const res = await axios.post("/api/login", {
           email: this.email,
@@ -34,10 +52,87 @@ export default {
         axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         this.$router.push("/dashboard");
       } catch (e) {
-        // Prefer server message, fallback to network/error message
         this.error = e.response?.data?.message || e.message || "Login failed";
+      } finally {
+        this.loading = false;
       }
     },
   },
 };
 </script>
+
+<style scoped>
+.login-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+}
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #ffffff;
+  border: 1px solid #eef4ff;
+  box-shadow: 0 6px 18px rgba(33, 53, 71, 0.06);
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+.login-title {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #123a8a;
+}
+.login-form .field {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.75rem;
+}
+.field-label {
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  color: #213547;
+}
+.field-input {
+  padding: 0.55rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #d7e3ff;
+  font-weight: 600;
+  box-sizing: border-box;
+}
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.btn {
+  background: linear-gradient(180deg, #2b7cff, #1a5fe0);
+  color: #fff;
+  border: none;
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.error {
+  color: #c0392b;
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+@media (max-width: 480px) {
+  .login-card {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+  .actions {
+    justify-content: stretch;
+  }
+  .btn {
+    width: 100%;
+  }
+}
+</style>
