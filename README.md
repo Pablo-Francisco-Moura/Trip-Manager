@@ -93,9 +93,19 @@ Notas
 - A API usa Sanctum para autenticação via tokens pessoais; veja `backend/README.md` para detalhes.
 - Para desenvolvimento rápido, o `docker-compose.yml` traz serviços para backend, db e frontend.
 
-Contribuição
+## O que está implementado
 
-1. Crie branches separados por feature/bugfix.
-2. Execute os testes localmente antes de abrir PR.
+- Backend (Laravel):
+  - Endpoints para registro/login (`/api/register`, `/api/login`) usando Sanctum.
+  - CRUD mínimo para `travel-requests` (`index`, `show`, `store`, `update status`).
+  - Políticas: apenas administradores podem alterar status; usuários veem somente seus pedidos.
+  - Notificações: quando um pedido é aprovado/cancelado, o solicitante recebe notificação (e-mail e registro em DB).
+  - Migrations, factories e seeders de exemplo (cria usuário `pablo@example.com` / `secret`).
 
-Mais detalhes estão em `backend/README.md` e `frontend/README.md`.
+- Frontend (Vue 3 + Vite):
+  - Tela de login que consome a API e armazena token Bearer.
+  - Dashboard com tabela de pedidos, filtros por status e ações de alteração de status (apenas para admins).
+  - Formulário para criação de pedidos ligado ao usuário autenticado.
+  - Feedbacks (toasts) e estados de loading nas operações assíncronas.
+
+## Mais detalhes estão em `backend/README.md` e `frontend/README.md`.
