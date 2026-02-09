@@ -37,19 +37,21 @@
           <td>{{ r.return_date }}</td>
           <td>{{ r.status }}</td>
           <td>
-            <button
-              v-if="isAdmin"
-              @click="updateStatus(r.id, 'approved')"
-              :disabled="updatingId === r.id"
-            >
-              {{ updatingId === r.id ? "Updating..." : "Approve" }}
-            </button>
-            <button
-              @click="updateStatus(r.id, 'canceled')"
-              :disabled="updatingId === r.id"
-            >
-              {{ updatingId === r.id ? "Updating..." : "Cancel" }}
-            </button>
+            <template v-if="isAdmin">
+              <button
+                @click="updateStatus(r.id, 'approved')"
+                :disabled="updatingId === r.id"
+              >
+                {{ updatingId === r.id ? "Updating..." : "Approve" }}
+              </button>
+              <button
+                @click="updateStatus(r.id, 'canceled')"
+                :disabled="updatingId === r.id || r.status === 'approved'"
+                title="Não é possível cancelar um pedido aprovado"
+              >
+                {{ updatingId === r.id ? "Updating..." : "Cancel" }}
+              </button>
+            </template>
           </td>
         </tr>
       </tbody>
