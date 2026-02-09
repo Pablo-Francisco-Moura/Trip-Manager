@@ -20,11 +20,12 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www
 
 # Copy only composer files first to leverage layer caching
-COPY backend/composer.json backend/composer.lock* /var/www/
+# (build context is the `backend` folder, so files are referenced relative to it)
+COPY composer.json composer.lock* /var/www/
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader || true
 
 # Copy project
-COPY backend/ /var/www/
+COPY . /var/www/
 
 RUN chown -R www-data:www-data /var/www
 
