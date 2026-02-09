@@ -20,6 +20,6 @@ class TravelRequestPolicy
      */
     public function updateStatus(User $user, TravelRequest $travelRequest): bool
     {
-        return $user->is_admin;
+        return (bool) $user->is_admin;
     }
 }

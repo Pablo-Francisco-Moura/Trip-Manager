@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Http\Requests\StoreTravelRequest;
 use App\Http\Requests\UpdateTravelRequestStatus;
 use App\Models\TravelRequest;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\Gate;
 
 class TravelRequestController extends Controller
 {
+    use AuthorizesRequests;
     public function index(Request $request)
     {
         $user = $request->user();
