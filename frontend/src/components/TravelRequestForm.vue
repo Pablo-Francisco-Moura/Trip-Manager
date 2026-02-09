@@ -1,16 +1,54 @@
 <template>
-  <div style="margin-bottom: 1rem">
+  <div class="trip-form">
     <h3>Create Request</h3>
-    <form @submit.prevent="submit" :class="{ loading: loading }">
-      <div style="display: flex; gap: 0.5rem; align-items: center">
-        <input v-model="requester_name" placeholder="Requester name" />
-        <input v-model="destination" placeholder="Destination" />
-        <input v-model="departure_date" type="date" />
-        <input v-model="return_date" type="date" />
-        <button type="submit">Create</button>
+    <form @submit.prevent="submit" :class="{ loading: loading }" class="form">
+      <div class="form-row">
+        <label class="form-label">Requester</label>
+        <input
+          class="form-input"
+          v-model="requester_name"
+          name="requester_name"
+          placeholder="Nome do solicitante"
+        />
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Destination</label>
+        <input
+          class="form-input"
+          v-model="destination"
+          name="destination"
+          placeholder="Destino"
+        />
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Departure</label>
+        <input
+          class="form-input"
+          v-model="departure_date"
+          name="departure_date"
+          type="date"
+          @change="onDepartureChange"
+        />
+      </div>
+
+      <div class="form-row">
+        <label class="form-label">Return</label>
+        <input
+          class="form-input"
+          v-model="return_date"
+          name="return_date"
+          type="date"
+          :min="minReturnDate"
+        />
+      </div>
+
+      <div class="form-actions">
+        <button class="btn" type="submit">Create</button>
+        <span class="message" v-if="message">{{ message }}</span>
       </div>
     </form>
-    <p v-if="message">{{ message }}</p>
   </div>
 </template>
 
@@ -26,11 +64,36 @@ export default {
       return_date: "",
       message: null,
       loading: false,
+      minReturnDate: null,
     };
   },
   methods: {
+    onDepartureChange() {
+      // set minimum allowed return date to departure date
+      if (this.departure_date) {
+        this.minReturnDate = this.departure_date;
+        // if current return date is before departure, reset it
+        if (this.return_date && this.return_date < this.departure_date) {
+          this.return_date = this.departure_date;
+        }
+      } else {
+        this.minReturnDate = null;
+      }
+    },
     async submit() {
       this.loading = true;
+      // Validate dates: return_date must not be before departure_date
+      if (
+        this.departure_date &&
+        this.return_date &&
+        this.return_date < this.departure_date
+      ) {
+        const msg = "A data de volta não pode ser anterior à data de ida.";
+        this.message = msg;
+        addToast(msg, "error");
+        this.loading = false;
+        return;
+      }
       try {
         await axios.post("/api/travel-requests", {
           requester_name: this.requester_name,
@@ -68,21 +131,60 @@ export default {
 </script>
 
 <style scoped>
-form {
-  display: flex;
-  gap: 0.5rem;
+.trip-form {
+  margin-bottom: 1rem;
+  max-width: 700px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  padding: 1rem;
+  border-radius: 8px;
+}
+.trip-form h3 {
+  margin: 0 0 0.75rem 0;
+}
+.form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
   align-items: center;
 }
-input {
-  padding: 0.4rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.form-row {
+  display: flex;
+  flex-direction: column;
 }
-button {
-  padding: 0.4rem 0.6rem;
-  border-radius: 4px;
-  border: 1px solid #888;
-  background: #fff;
+.form-label {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 0.25rem;
+}
+.form-input {
+  padding: 0.5rem;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+.form-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+.btn {
+  padding: 0.5rem 0.8rem;
+  background: #2b7cff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.message {
+  color: #333;
+  font-size: 0.95rem;
 }
 .loading {
   opacity: 0.6;
