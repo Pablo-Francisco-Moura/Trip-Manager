@@ -99,6 +99,26 @@ cd backend
 vendor/bin/phpunit
 ```
 
+### Executando apenas testes específicos
+
+- Rodar uma classe de teste (dentro do container):
+
+```bash
+docker compose exec backend php artisan test --filter=TravelRequestTest
+```
+
+### Executando testes sem Docker (local)
+
+```bash
+cd backend
+vendor/bin/phpunit --filter TravelRequestTest
+```
+
+### Notas
+
+- Recomenda-se rodar `composer install` antes de rodar os testes se você estiver rodando localmente.
+- Para executar testes que verificam notificações, utilizamos `Notification::fake()` nos testes de feature.
+
 ## Observações finais
 
 - O README principal do repositório na raiz pode conter instruções adicionais para o front-end.
