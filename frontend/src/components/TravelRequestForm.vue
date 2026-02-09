@@ -20,10 +20,12 @@ export default {
       departure_date: "",
       return_date: "",
       message: null,
+      loading: false,
     };
   },
   methods: {
     async submit() {
+      this.loading = true;
       try {
         await axios.post("/api/travel-requests", {
           destination: this.destination,
@@ -31,9 +33,14 @@ export default {
           return_date: this.return_date,
         });
         this.message = "Created";
+        this.destination = "";
+        this.departure_date = "";
+        this.return_date = "";
         this.$emit("created");
       } catch (e) {
-        this.message = "Error creating request";
+        this.message = e.response?.data?.message || "Error creating request";
+      } finally {
+        this.loading = false;
       }
     },
   },

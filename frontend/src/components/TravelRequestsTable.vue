@@ -35,16 +35,23 @@
 import axios from "axios";
 export default {
   data() {
-    return { requests: [], isAdmin: false };
+    return { requests: [], isAdmin: false, loading: false, updatingId: null };
   },
   methods: {
     async fetch() {
-      const res = await axios.get("/api/travel-requests");
-      this.requests = res.data.data || res.data;
+      this.loading = true;
+      try {
+        const res = await axios.get("/api/travel-requests");
+        this.requests = res.data.data || res.data;
+      } finally {
+        this.loading = false;
+      }
     },
     async updateStatus(id, status) {
       try {
+        this.updatingId = id;
         await axios.patch(`/api/travel-requests/${id}/status`, { status });
+        this.updatingId = null;
         this.fetch();
       } catch (e) {
         alert(e.response?.data?.message || "Error");
@@ -55,6 +62,13 @@ export default {
     const token = localStorage.getItem("token");
     if (token)
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // fetch authenticated user to determine admin
+    axios
+      .get("/api/user")
+      .then((r) => {
+        this.isAdmin = !!r.data.is_admin;
+      })
+      .catch(() => {});
     this.fetch();
   },
 };
