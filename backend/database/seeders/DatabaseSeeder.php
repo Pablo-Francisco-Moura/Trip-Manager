@@ -17,12 +17,15 @@ class DatabaseSeeder extends Seeder
     {
         // Create a demo/admin user for development
         // Password: secret
-        \App\Models\User::factory()->create([
-            'name' => 'Pablo',
-            'email' => 'pablo@example.com',
-            'is_admin' => true,
-            'password' => bcrypt('secret'),
-        ]);
+        // Create or update demo admin
+        \App\Models\User::updateOrCreate(
+            ['email' => 'pablo@example.com'],
+            [
+                'name' => 'Pablo',
+                'is_admin' => true,
+                'password' => bcrypt('secret'),
+            ]
+        );
 
         // Keep one regular test user
         User::factory()->create([
