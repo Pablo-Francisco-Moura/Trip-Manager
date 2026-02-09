@@ -68,6 +68,10 @@ php artisan vendor:publish --provider="Laravel\\Sanctum\\SanctumServiceProvider"
 # Run migrations
 php artisan migrate --force || true
 
+# Seed database (idempotent seeder)
+echo "Running database seed (DatabaseSeeder)..."
+php artisan db:seed --class=DatabaseSeeder --force || true
+
 # Start the built-in server
 echo "Starting Laravel development server on 0.0.0.0:8000"
 exec php artisan serve --host=0.0.0.0 --port=8000
