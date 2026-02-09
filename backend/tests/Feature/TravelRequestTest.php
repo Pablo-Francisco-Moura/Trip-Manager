@@ -4,7 +4,9 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use App\Models\TravelRequest;
+use App\Notifications\TravelRequestStatusChanged;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
 class TravelRequestTest extends TestCase
@@ -38,6 +40,8 @@ class TravelRequestTest extends TestCase
 
     public function test_admin_can_approve_and_cannot_cancel_when_approved()
     {
+        Notification::fake();
+
         $user = User::factory()->create();
         $admin = User::factory()->create(['is_admin' => true]);
         $request = TravelRequest::factory()->create(['user_id' => $user->id]);
@@ -46,6 +50,9 @@ class TravelRequestTest extends TestCase
             ->patchJson('/api/travel-requests/'.$request->id.'/status', ['status' => 'approved'])
             ->assertStatus(200)
             ->assertJsonFragment(['status' => 'approved']);
+
+        // Notification should be sent to requester
+        Notification::assertSentTo($request->user, TravelRequestStatusChanged::class);
 
         $this->actingAs($admin, 'sanctum')
             ->patchJson('/api/travel-requests/'.$request->id.'/status', ['status' => 'canceled'])
