@@ -1,6 +1,16 @@
 <template>
   <div class="requests-table">
-    <h3>Requests</h3>
+    <div class="requests-header">
+      <h3>Requests</h3>
+      <button
+        class="create-btn"
+        :title="showCreateForm ? 'Fechar formulário' : 'Criar nova requisição'"
+        @click="toggleCreateForm"
+      >
+        <span v-if="!showCreateForm">+</span>
+        <span v-else>&times;</span>
+      </button>
+    </div>
     <div class="user-info-row">
       <div v-if="isAdmin" class="admin-badge">
         Você é administrador — pode alterar o status das requisições
@@ -9,6 +19,10 @@
         Você não é administrador — apenas pode visualizar seus pedidos
       </div>
     </div>
+    <div v-if="showCreateForm" class="create-form-wrap">
+      <TravelRequestForm @created="handleCreated" />
+    </div>
+
     <div class="filter-row">
       <label>Filter:</label>
       <select class="filter-select" v-model="filterStatus">
@@ -22,18 +36,28 @@
         v-model="destinationFilter"
         placeholder="Destination"
       />
-      <input
-        class="date-input"
-        type="date"
-        v-model="departureFrom"
-        title="Departure from"
-      />
-      <input
-        class="date-input"
-        type="date"
-        v-model="departureTo"
-        title="Departure to"
-      />
+      <div class="filter-field">
+        <label class="filter-field-label">Data de ida</label>
+        <input
+          class="date-input"
+          type="date"
+          v-model="departureFrom"
+          title="Departure from"
+          :max="filterMaxDeparture"
+          @change="onFilterDepartureChange"
+        />
+      </div>
+      <div class="filter-field">
+        <label class="filter-field-label">Data de volta</label>
+        <input
+          class="date-input"
+          type="date"
+          v-model="departureTo"
+          title="Departure to"
+          :min="filterMinReturn"
+          @change="onFilterReturnChange"
+        />
+      </div>
       <div class="filter-actions">
         <button class="btn" @click="applyFilters">Apply</button>
         <button class="btn" @click="clearFilters">Clear</button>
@@ -62,20 +86,24 @@
               {{ (r.user && r.user.name) || r.requester_name }}
             </td>
             <td data-label="Destination">{{ r.destination }}</td>
-            <td data-label="Departure">{{ r.departure_date }}</td>
-            <td data-label="Return">{{ r.return_date }}</td>
-            <td data-label="Status">{{ r.status }}</td>
+            <td data-label="Departure">{{ formatDate(r.departure_date) }}</td>
+            <td data-label="Return">{{ formatDate(r.return_date) }}</td>
+            <td data-label="Status">
+              <span :class="['status-chip', 'status-' + (r.status || '')]">
+                {{ r.status }}
+              </span>
+            </td>
             <td data-label="Actions">
-              <template v-if="isAdmin">
+              <template v-if="isAdmin && r.status === 'requested'">
                 <button
-                  @click="updateStatus(r.id, 'approved')"
-                  :disabled="updatingId === r.id"
+                  @click="openConfirm(r.id, 'approved')"
+                  :disabled="updatingId === r.id || r.status === 'approved'"
                   class="action-btn approve"
                 >
                   {{ updatingId === r.id ? "Updating..." : "Approve" }}
                 </button>
                 <button
-                  @click="updateStatus(r.id, 'canceled')"
+                  @click="openConfirm(r.id, 'canceled')"
                   :disabled="updatingId === r.id || r.status === 'approved'"
                   title="Não é possível cancelar um pedido aprovado"
                   class="action-btn cancel"
@@ -98,15 +126,38 @@
         <div class="modal-body">
           <p><strong>Requester:</strong> {{ modalData.requester_name }}</p>
           <p><strong>Destination:</strong> {{ modalData.destination }}</p>
-          <p><strong>Departure:</strong> {{ modalData.departure_date }}</p>
-          <p><strong>Return:</strong> {{ modalData.return_date }}</p>
+          <p>
+            <strong>Departure:</strong>
+            {{ formatDate(modalData.departure_date) }}
+          </p>
+          <p>
+            <strong>Return:</strong> {{ formatDate(modalData.return_date) }}
+          </p>
           <p><strong>Status:</strong> {{ modalData.status }}</p>
           <p v-if="modalData.created_at">
-            <strong>Created:</strong> {{ modalData.created_at }}
+            <strong>Created:</strong> {{ formatDate(modalData.created_at) }}
           </p>
         </div>
         <div class="modal-actions">
           <button class="btn" @click="closeModal">Close</button>
+        </div>
+      </div>
+    </div>
+    <!-- Confirmation modal for approve/cancel -->
+    <div v-if="confirmVisible" class="modal-overlay" @click.self="closeConfirm">
+      <div class="modal-card">
+        <h4>Confirmação</h4>
+        <div class="modal-body">
+          <p>
+            Tem certeza que deseja <strong>{{ confirmData.status }}</strong> o
+            pedido #{{ confirmData.id }}?
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" @click="confirmExecute">Confirmar</button>
+          <button class="btn" @click="closeConfirm" style="margin-left: 0.5rem">
+            Cancelar
+          </button>
         </div>
       </div>
     </div>
@@ -116,25 +167,41 @@
 <script>
 import axios from "axios";
 import { addToast } from "../stores/ui";
+import TravelRequestForm from "./TravelRequestForm.vue";
 
 export default {
+  components: { TravelRequestForm },
   data() {
     return {
+      showCreateForm: false,
       requests: [],
       isAdmin: false,
       loading: false,
       updatingId: null,
+      confirmVisible: false,
+      confirmData: { id: null, status: null },
       filterStatus: "",
       destinationFilter: "",
       departureFrom: "",
       departureTo: "",
+      filterMinReturn: null,
+      filterMaxDeparture: null,
       showModal: false,
       modalData: {},
       currentUser: null,
       refreshIntervalId: null,
     };
   },
+  // using native date inputs for filters
   methods: {
+    toggleCreateForm() {
+      this.showCreateForm = !this.showCreateForm;
+    },
+    handleCreated() {
+      this.showCreateForm = false;
+      this.fetch();
+    },
+    // openPicker removed; using visible native date inputs
     async fetch() {
       this.loading = true;
       // keep profile up-to-date so admin controls render correctly
@@ -167,11 +234,57 @@ export default {
       }
       this.fetch();
     },
+    onFilterDepartureChange() {
+      // when departureFrom is set, ensure departureTo >= departureFrom
+      if (this.departureFrom) {
+        this.filterMinReturn = this.departureFrom;
+        if (this.departureTo && this.departureTo < this.departureFrom) {
+          this.departureTo = this.departureFrom;
+          addToast("Data de volta ajustada para ser >= data de ida", "info");
+        }
+      } else {
+        this.filterMinReturn = null;
+      }
+    },
+    onFilterReturnChange() {
+      // when departureTo is set, ensure departureFrom <= departureTo
+      if (this.departureTo) {
+        this.filterMaxDeparture = this.departureTo;
+        if (this.departureFrom && this.departureFrom > this.departureTo) {
+          this.departureFrom = this.departureTo;
+          addToast("Data de ida ajustada para ser <= data de volta", "info");
+        }
+      } else {
+        this.filterMaxDeparture = null;
+      }
+    },
+    // parseDate removed; native date inputs provide ISO (YYYY-MM-DD)
+    formatDate(value) {
+      if (!value) return "";
+      try {
+        const s = String(value);
+        const datePart = s.split("T")[0].split(" ")[0];
+        const parts = datePart.split("-");
+        if (parts.length === 3) {
+          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        const d = new Date(value);
+        if (isNaN(d)) return value;
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      } catch (e) {
+        return value;
+      }
+    },
     clearFilters() {
       this.filterStatus = "";
       this.destinationFilter = "";
       this.departureFrom = "";
       this.departureTo = "";
+      this.filterMinReturn = null;
+      this.filterMaxDeparture = null;
       this.fetch();
     },
     async viewRequest(id) {
@@ -218,6 +331,23 @@ export default {
         this.isAdmin = false;
       }
     },
+    openConfirm(id, status) {
+      this.confirmData = { id, status };
+      this.confirmVisible = true;
+    },
+    async confirmExecute() {
+      const { id, status } = this.confirmData;
+      this.confirmVisible = false;
+      await this.updateStatus(id, status);
+      this.confirmData = { id: null, status: null };
+    },
+    closeConfirm() {
+      this.confirmVisible = false;
+      this.confirmData = { id: null, status: null };
+    },
+    statusClass(status) {
+      return `status-${status}`;
+    },
   },
   mounted() {
     const token = localStorage.getItem("token");
@@ -258,16 +388,41 @@ button {
   max-width: 1100px;
   margin: 0.5rem auto 1rem;
 }
+.requests-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.create-btn {
+  margin-left: 0.5rem;
+  background: #2b7cff;
+  color: #fff;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 22px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.create-form-wrap {
+  margin: 0.5rem 0 1rem;
+}
 .filter-row {
   display: flex;
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .filter-field {
   display: flex;
   flex-direction: column;
+  min-width: 180px;
 }
 .filter-field-label {
   font-size: 0.75rem;
@@ -313,6 +468,7 @@ button {
   display: flex;
   gap: 0.4rem;
   margin-left: 0.25rem;
+  flex-shrink: 0;
 }
 
 /* Filter control styled like a compact button */
@@ -365,10 +521,50 @@ button {
   color: #fff;
 }
 
+/* Status chips */
+.status-chip {
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-block;
+  font-size: 0.9rem;
+}
+.status-requested {
+  background: #ffd740; /* yellow */
+  color: #5a3b00;
+}
+.status-approved {
+  background: #2b7cff; /* blue */
+  color: #fff;
+}
+.status-canceled {
+  background: #ff5b5b; /* red */
+  color: #fff;
+}
+
 /* Responsive: convert rows to card-like blocks */
 @media (max-width: 700px) {
   .styled-table thead {
     display: none;
+  }
+  .filter-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  .filter-field {
+    width: 100%;
+    min-width: 0;
+  }
+  .filter-actions {
+    width: 100%;
+    justify-content: flex-start;
+    margin-left: 0;
+  }
+  .filter-input,
+  .date-input,
+  .filter-select {
+    width: 100%;
   }
   .table-row {
     display: block;

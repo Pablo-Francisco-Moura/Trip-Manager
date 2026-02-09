@@ -8,7 +8,6 @@
     </div>
 
     <main style="padding: 1rem; max-width: 1100px; margin: 0 auto">
-      <TravelRequestForm @created="reload" />
       <TravelRequestsTable ref="table" />
       <Toast />
     </main>

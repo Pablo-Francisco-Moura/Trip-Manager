@@ -31,6 +31,7 @@
           name="departure_date"
           type="date"
           @change="onDepartureChange"
+          :max="maxDepartureDate"
         />
       </div>
 
@@ -42,6 +43,7 @@
           name="return_date"
           type="date"
           :min="minReturnDate"
+          @change="onReturnChange"
         />
       </div>
 
@@ -67,11 +69,13 @@ export default {
       message: null,
       loading: false,
       minReturnDate: null,
+      maxDepartureDate: null,
     };
   },
+  // using native date inputs bound to ISO strings
   methods: {
     onDepartureChange() {
-      // set minimum allowed return date to departure date
+      // set minimum allowed return date to departure date (ISO)
       if (this.departure_date) {
         this.minReturnDate = this.departure_date;
         // if current return date is before departure, reset it
@@ -80,6 +84,35 @@ export default {
         }
       } else {
         this.minReturnDate = null;
+      }
+    },
+    onReturnChange() {
+      // ensure departure_date is not after return_date
+      if (this.return_date) {
+        this.maxDepartureDate = this.return_date;
+        if (this.departure_date && this.departure_date > this.return_date) {
+          this.departure_date = this.return_date;
+        }
+      } else {
+        this.maxDepartureDate = null;
+      }
+    },
+    // parseDate removed; using native date inputs which provide ISO YYYY-MM-DD
+    formatDate(value) {
+      if (!value) return "";
+      try {
+        const s = String(value);
+        const datePart = s.split("T")[0].split(" ")[0];
+        const parts = datePart.split("-");
+        if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        const d = new Date(value);
+        if (isNaN(d)) return value;
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        return `${dd}/${mm}/${yyyy}`;
+      } catch (e) {
+        return value;
       }
     },
     async submit() {
@@ -198,6 +231,11 @@ export default {
 }
 .loading {
   opacity: 0.6;
+}
+.small-muted {
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 0.25rem;
 }
 
 @media (max-width: 600px) {
