@@ -139,6 +139,14 @@ export default {
   padding: 1rem;
   border-radius: 8px;
 }
+
+/* Ensure elements calculate widths including padding/borders to avoid overflow */
+.trip-form,
+.form,
+.form-row,
+.form-input {
+  box-sizing: border-box;
+}
 .trip-form h3 {
   margin: 0 0 0.75rem 0;
 }
@@ -188,5 +196,24 @@ export default {
 }
 .loading {
   opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+  .form {
+    grid-template-columns: 1fr;
+  }
+  .form-row {
+    width: 100%;
+  }
+  .form-input {
+    width: 100%;
+  }
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .btn {
+    width: 100%;
+  }
 }
 </style>
