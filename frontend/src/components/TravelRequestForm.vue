@@ -6,9 +6,10 @@
         <label class="form-label">Requester</label>
         <input
           class="form-input"
-          v-model="requester_name"
+          :value="requester_name"
           name="requester_name"
           placeholder="Nome do solicitante"
+          disabled
         />
       </div>
 
@@ -59,6 +60,7 @@ export default {
   data() {
     return {
       requester_name: "",
+      requester_id: null,
       destination: "",
       departure_date: "",
       return_date: "",
@@ -96,7 +98,6 @@ export default {
       }
       try {
         await axios.post("/api/travel-requests", {
-          requester_name: this.requester_name,
           destination: this.destination,
           departure_date: this.departure_date,
           return_date: this.return_date,
@@ -119,6 +120,7 @@ export default {
       try {
         const r = await axios.get("/api/user");
         this.requester_name = r.data.name || "";
+        this.requester_id = r.data.id || null;
       } catch (e) {
         // ignore
       }

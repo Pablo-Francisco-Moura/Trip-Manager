@@ -18,7 +18,11 @@ class TravelRequestController extends Controller
     {
         $user = $request->user();
 
-        $query = TravelRequest::query()->where('user_id', $user->id);
+        // Admins may see all travel requests; regular users only their own
+        $query = TravelRequest::with('user');
+        if (! ($user->is_admin ?? false)) {
+            $query->where('user_id', $user->id);
+        }
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -45,7 +49,9 @@ class TravelRequestController extends Controller
     public function store(StoreTravelRequest $request)
     {
         $data = $request->validated();
+        // associate with authenticated user and record requester name server-side
         $data['user_id'] = $request->user()->id;
+        $data['requester_name'] = $request->user()->name;
 
         $travel = TravelRequest::create($data);
 

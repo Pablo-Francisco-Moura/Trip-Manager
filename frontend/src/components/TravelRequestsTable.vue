@@ -47,6 +47,7 @@
         <thead>
           <tr>
             <th>ID</th>
+            <th>Requester</th>
             <th>Destination</th>
             <th>Departure</th>
             <th>Return</th>
@@ -57,6 +58,9 @@
         <tbody>
           <tr v-for="r in requests" :key="r.id" class="table-row">
             <td data-label="ID">{{ r.id }}</td>
+            <td data-label="Requester">
+              {{ (r.user && r.user.name) || r.requester_name }}
+            </td>
             <td data-label="Destination">{{ r.destination }}</td>
             <td data-label="Departure">{{ r.departure_date }}</td>
             <td data-label="Return">{{ r.return_date }}</td>
