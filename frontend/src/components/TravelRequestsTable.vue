@@ -1,6 +1,22 @@
 <template>
   <div>
     <h3>Requests</h3>
+    <div
+      style="
+        margin-bottom: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      "
+    >
+      <label>Filter:</label>
+      <select v-model="filterStatus" @change="fetch">
+        <option value="">All</option>
+        <option value="requested">Requested</option>
+        <option value="approved">Approved</option>
+        <option value="canceled">Canceled</option>
+      </select>
+    </div>
     <div v-if="loading">Loading...</div>
     <table v-else border="1" cellpadding="6">
       <thead>
@@ -47,13 +63,21 @@ import { addToast } from "../stores/ui";
 
 export default {
   data() {
-    return { requests: [], isAdmin: false, loading: false, updatingId: null };
+    return {
+      requests: [],
+      isAdmin: false,
+      loading: false,
+      updatingId: null,
+      filterStatus: "",
+    };
   },
   methods: {
     async fetch() {
       this.loading = true;
       try {
-        const res = await axios.get("/api/travel-requests");
+        const params = {};
+        if (this.filterStatus) params.status = this.filterStatus;
+        const res = await axios.get("/api/travel-requests", { params });
         this.requests = res.data.data || res.data;
       } finally {
         this.loading = false;

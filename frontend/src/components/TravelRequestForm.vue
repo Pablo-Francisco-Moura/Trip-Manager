@@ -1,11 +1,14 @@
 <template>
   <div style="margin-bottom: 1rem">
     <h3>Create Request</h3>
-    <form @submit.prevent="submit">
-      <input v-model="destination" placeholder="Destination" />
-      <input v-model="departure_date" type="date" />
-      <input v-model="return_date" type="date" />
-      <button type="submit">Create</button>
+    <form @submit.prevent="submit" :class="{ loading: loading }">
+      <div style="display: flex; gap: 0.5rem; align-items: center">
+        <input v-model="requester_name" placeholder="Requester name" />
+        <input v-model="destination" placeholder="Destination" />
+        <input v-model="departure_date" type="date" />
+        <input v-model="return_date" type="date" />
+        <button type="submit">Create</button>
+      </div>
     </form>
     <p v-if="message">{{ message }}</p>
   </div>
@@ -17,6 +20,7 @@ import { addToast } from "../stores/ui";
 export default {
   data() {
     return {
+      requester_name: "",
       destination: "",
       departure_date: "",
       return_date: "",
@@ -29,6 +33,7 @@ export default {
       this.loading = true;
       try {
         await axios.post("/api/travel-requests", {
+          requester_name: this.requester_name,
           destination: this.destination,
           departure_date: this.departure_date,
           return_date: this.return_date,
@@ -47,6 +52,17 @@ export default {
         this.loading = false;
       }
     },
+    async fetchUser() {
+      try {
+        const r = await axios.get("/api/user");
+        this.requester_name = r.data.name || "";
+      } catch (e) {
+        // ignore
+      }
+    },
+  },
+  mounted() {
+    this.fetchUser();
   },
 };
 </script>
