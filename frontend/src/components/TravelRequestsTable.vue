@@ -11,7 +11,6 @@
           <th>Return</th>
           <th>Status</th>
           <th>Actions</th>
-          import { addToast } from '../stores/ui'
         </tr>
       </thead>
       <tbody>
@@ -31,10 +30,9 @@
             </button>
             <button
               @click="updateStatus(r.id, 'canceled')"
-                  addToast('Status atualizado', 'success');
-                  this.fetch();
+              :disabled="updatingId === r.id"
             >
-                  addToast(e.response?.data?.message || "Error updating status", 'error');
+              {{ updatingId === r.id ? "Updating..." : "Cancel" }}
             </button>
           </td>
         </tr>
@@ -45,6 +43,8 @@
 
 <script>
 import axios from "axios";
+import { addToast } from "../stores/ui";
+
 export default {
   data() {
     return { requests: [], isAdmin: false, loading: false, updatingId: null };
@@ -64,9 +64,12 @@ export default {
         this.updatingId = id;
         await axios.patch(`/api/travel-requests/${id}/status`, { status });
         this.updatingId = null;
+        addToast("Status atualizado", "success");
         this.fetch();
       } catch (e) {
-        alert(e.response?.data?.message || "Error");
+        const msg = e.response?.data?.message || "Error updating status";
+        addToast(msg, "error");
+        this.updatingId = null;
       }
     },
   },
@@ -74,7 +77,6 @@ export default {
     const token = localStorage.getItem("token");
     if (token)
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    // fetch authenticated user to determine admin
     axios
       .get("/api/user")
       .then((r) => {
@@ -85,3 +87,19 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+th,
+td {
+  padding: 0.5rem;
+  text-align: left;
+}
+button {
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.25rem;
+}
+</style>
