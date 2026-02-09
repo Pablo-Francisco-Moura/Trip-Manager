@@ -3,12 +3,33 @@
     <h3>Requests</h3>
     <div class="filter-row">
       <label>Filter:</label>
-      <select class="filter-select" v-model="filterStatus" @change="fetch">
+      <select class="filter-select" v-model="filterStatus">
         <option value="">All</option>
         <option value="requested">Requested</option>
         <option value="approved">Approved</option>
         <option value="canceled">Canceled</option>
       </select>
+      <input
+        class="filter-input"
+        v-model="destinationFilter"
+        placeholder="Destination"
+      />
+      <input
+        class="date-input"
+        type="date"
+        v-model="departureFrom"
+        title="Departure from"
+      />
+      <input
+        class="date-input"
+        type="date"
+        v-model="departureTo"
+        title="Departure to"
+      />
+      <div class="filter-actions">
+        <button class="btn" @click="applyFilters">Apply</button>
+        <button class="btn" @click="clearFilters">Clear</button>
+      </div>
     </div>
 
     <div v-if="loading" class="loading">Loading...</div>
@@ -17,6 +38,7 @@
       <table class="styled-table" cellpadding="6">
         <thead>
           <tr>
+            <th>ID</th>
             <th>Destination</th>
             <th>Departure</th>
             <th>Return</th>
@@ -26,6 +48,7 @@
         </thead>
         <tbody>
           <tr v-for="r in requests" :key="r.id" class="table-row">
+            <td data-label="ID">{{ r.id }}</td>
             <td data-label="Destination">{{ r.destination }}</td>
             <td data-label="Departure">{{ r.departure_date }}</td>
             <td data-label="Return">{{ r.return_date }}</td>
@@ -48,10 +71,32 @@
                   {{ updatingId === r.id ? "Updating..." : "Cancel" }}
                 </button>
               </template>
+              <button class="action-btn view" @click="viewRequest(r.id)">
+                View
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+    <!-- Modal for viewing details -->
+    <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-card">
+        <h4>Request #{{ modalData.id }}</h4>
+        <div class="modal-body">
+          <p><strong>Requester:</strong> {{ modalData.requester_name }}</p>
+          <p><strong>Destination:</strong> {{ modalData.destination }}</p>
+          <p><strong>Departure:</strong> {{ modalData.departure_date }}</p>
+          <p><strong>Return:</strong> {{ modalData.return_date }}</p>
+          <p><strong>Status:</strong> {{ modalData.status }}</p>
+          <p v-if="modalData.created_at">
+            <strong>Created:</strong> {{ modalData.created_at }}
+          </p>
+        </div>
+        <div class="modal-actions">
+          <button class="btn" @click="closeModal">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -68,6 +113,11 @@ export default {
       loading: false,
       updatingId: null,
       filterStatus: "",
+      destinationFilter: "",
+      departureFrom: "",
+      departureTo: "",
+      showModal: false,
+      modalData: {},
     };
   },
   methods: {
@@ -76,11 +126,42 @@ export default {
       try {
         const params = {};
         if (this.filterStatus) params.status = this.filterStatus;
+        if (this.destinationFilter) params.destination = this.destinationFilter;
+        // backend expects 'from' and 'to' to filter by departure_date
+        if (this.departureFrom) params.from = this.departureFrom;
+        if (this.departureTo) params.to = this.departureTo;
         const res = await axios.get("/api/travel-requests", { params });
         this.requests = res.data.data || res.data;
       } finally {
         this.loading = false;
       }
+    },
+    applyFilters() {
+      this.fetch();
+    },
+    clearFilters() {
+      this.filterStatus = "";
+      this.destinationFilter = "";
+      this.departureFrom = "";
+      this.departureTo = "";
+      this.fetch();
+    },
+    async viewRequest(id) {
+      try {
+        this.loading = true;
+        const res = await axios.get(`/api/travel-requests/${id}`);
+        this.modalData = res.data.data || res.data;
+        this.showModal = true;
+      } catch (e) {
+        const msg = e.response?.data?.message || "Error fetching request";
+        addToast(msg, "error");
+      } finally {
+        this.loading = false;
+      }
+    },
+    closeModal() {
+      this.showModal = false;
+      this.modalData = {};
     },
     async updateStatus(id, status) {
       try {
@@ -135,6 +216,25 @@ button {
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 0.5rem;
+}
+
+.filter-input {
+  padding: 0.45rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #e6eefc;
+  background: #fff;
+  font-weight: 600;
+}
+.date-input {
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #e6eefc;
+  background: #fff;
+}
+.filter-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: 0.25rem;
 }
 
 /* Filter control styled like a compact button */
@@ -221,5 +321,40 @@ button {
     gap: 0.5rem;
     flex-direction: row;
   }
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(18, 58, 138, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 1200;
+}
+.modal-card {
+  max-width: 520px;
+  width: 100%;
+  background: #fff;
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 14px 40px rgba(33, 53, 71, 0.18);
+}
+.modal-card h4 {
+  margin: 0 0 0.6rem 0;
+  color: #123a8a;
+}
+.modal-body p {
+  margin: 0.25rem 0;
+}
+.modal-actions {
+  margin-top: 0.75rem;
+  text-align: right;
+}
+.action-btn.view {
+  background: #6b7280;
+  color: #fff;
 }
 </style>
