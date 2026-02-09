@@ -39,5 +39,21 @@ services:
     ports:
       - "3306:3306"
 
+  frontend:
+    build:
+      context: ./frontend
+    container_name: trip-manager-frontend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: "http://backend:8000"
+    depends_on:
+      - backend
+
 volumes:
   dbdata:
