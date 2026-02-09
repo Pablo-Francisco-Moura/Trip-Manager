@@ -1,5 +1,6 @@
 <template>
   <div class="login-wrap">
+    <div class="brand">Trip Manager</div>
     <div class="login-card">
       <h2 class="login-title">Login</h2>
       <form @submit.prevent="submit" class="login-form">
@@ -64,8 +65,10 @@ export default {
 <style scoped>
 .login-wrap {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 0.5rem;
   padding: 2.5rem 1rem;
 }
 .login-card {
@@ -82,6 +85,13 @@ export default {
   font-size: 1.25rem;
   font-weight: 800;
   color: #123a8a;
+}
+.brand {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: #123a8a;
+  margin-bottom: 0.6rem;
 }
 .login-form .field {
   display: flex;

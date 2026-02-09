@@ -17,7 +17,6 @@
       <table class="styled-table" cellpadding="6">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Destination</th>
             <th>Departure</th>
             <th>Return</th>
@@ -27,7 +26,6 @@
         </thead>
         <tbody>
           <tr v-for="r in requests" :key="r.id" class="table-row">
-            <td data-label="ID">{{ r.id }}</td>
             <td data-label="Destination">{{ r.destination }}</td>
             <td data-label="Departure">{{ r.departure_date }}</td>
             <td data-label="Return">{{ r.return_date }}</td>

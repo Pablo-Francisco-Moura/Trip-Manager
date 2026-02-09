@@ -39,4 +39,24 @@ select,
 textarea {
   font-weight: 600;
 }
+
+/* Hover styles for all interactive controls to make them more visible */
+button,
+.btn,
+.action-btn,
+.filter-select {
+  transition:
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
+}
+
+button:not(:disabled):hover,
+.btn:not(:disabled):hover,
+.action-btn:not(:disabled):hover,
+.filter-select:not(:disabled):hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(33, 53, 71, 0.12);
+  filter: brightness(0.98);
+}
 </style>
