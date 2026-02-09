@@ -11,8 +11,9 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     libicu-dev \
     libjpeg-dev \
+    libsqlite3-dev \
     && docker-php-ext-configure gd --with-jpeg \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo pdo_mysql pdo_sqlite mbstring exif pcntl bcmath gd zip
 
 # Install composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
