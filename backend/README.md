@@ -83,6 +83,22 @@ Authorization: Bearer <token>
 - `GET /api/travel-requests/{id}` — detalhes do pedido (autenticado, dono do pedido)
 - `PATCH /api/travel-requests/{id}/status` — atualizar status (autenticado, somente admin)
 
+Detalhes de cada endpoint
+
+- `POST /api/register` — corpo JSON: `{ "name": "Nome", "email": "a@b.com", "password": "secret" }`. Retorna o usuário e um `token`.
+- `POST /api/login` — corpo JSON: `{ "email": "a@b.com", "password": "secret" }`. Retorna `token`.
+- `GET /api/user` — retorna o usuário autenticado (use `Authorization: Bearer <token>`).
+
+- `GET /api/travel-requests` — query params opcionais: `status` (requested|approved|canceled), `destination` (texto), `from` e `to` (YYYY-MM-DD) para filtrar por `departure_date`. Retorna paginação com 15 resultados por página.
+
+- `POST /api/travel-requests` — corpo JSON: `{ "requester_name": "Nome", "destination": "Cidade", "departure_date": "YYYY-MM-DD", "return_date": "YYYY-MM-DD" }`. Cria um pedido vinculado ao usuário autenticado.
+
+- `GET /api/travel-requests/{id}` — retorna os dados do pedido (apenas para dono do pedido ou admin).
+
+- `PATCH /api/travel-requests/{id}/status` — apenas administradores podem alterar o status. Corpo JSON: `{ "status": "approved" }` ou `{ "status": "canceled" }`.
+    - Regra de negócio: não é permitido cancelar um pedido que já esteja `approved`.
+    - Ao alterar o status para `approved` ou `canceled`, o sistema envia uma notificação (e-mail + registro em DB) para o solicitante.
+
 ## Testes
 
 Rodar testes dentro do container:
