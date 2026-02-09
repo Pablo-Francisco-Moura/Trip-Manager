@@ -1,6 +1,14 @@
 <template>
   <div class="requests-table">
     <h3>Requests</h3>
+    <div class="user-info-row">
+      <div v-if="isAdmin" class="admin-badge">
+        Você é administrador — pode alterar o status das requisições
+      </div>
+      <div v-else class="user-badge">
+        Você não é administrador — apenas pode visualizar seus pedidos
+      </div>
+    </div>
     <div class="filter-row">
       <label>Filter:</label>
       <select class="filter-select" v-model="filterStatus">
@@ -118,11 +126,15 @@ export default {
       departureTo: "",
       showModal: false,
       modalData: {},
+      currentUser: null,
+      refreshIntervalId: null,
     };
   },
   methods: {
     async fetch() {
       this.loading = true;
+      // keep profile up-to-date so admin controls render correctly
+      await this.refreshUser?.();
       try {
         const params = {};
         if (this.filterStatus) params.status = this.filterStatus;
@@ -137,6 +149,18 @@ export default {
       }
     },
     applyFilters() {
+      // Validate date range: departureTo must not be before departureFrom
+      if (
+        this.departureFrom &&
+        this.departureTo &&
+        this.departureTo < this.departureFrom
+      ) {
+        addToast(
+          'A data "Departure to" não pode ser anterior à "Departure from".',
+          "error",
+        );
+        return;
+      }
       this.fetch();
     },
     clearFilters() {
@@ -176,18 +200,37 @@ export default {
         this.updatingId = null;
       }
     },
+    async refreshUser() {
+      try {
+        const res = await axios.get("/api/user");
+        this.currentUser = res.data;
+        this.isAdmin = !!res.data.is_admin;
+      } catch (e) {
+        if (e.response?.status === 401) {
+          localStorage.removeItem("token");
+          delete axios.defaults.headers.common["Authorization"];
+        }
+        this.currentUser = null;
+        this.isAdmin = false;
+      }
+    },
   },
   mounted() {
     const token = localStorage.getItem("token");
     if (token)
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    axios
-      .get("/api/user")
-      .then((r) => {
-        this.isAdmin = !!r.data.is_admin;
-      })
-      .catch(() => {});
-    this.fetch();
+    // load profile and requests, then poll for profile changes
+    this.refreshUser().then(() => this.fetch());
+    this.refreshIntervalId = setInterval(() => this.refreshUser(), 5000);
+  },
+
+  beforeUnmount() {
+    if (this.refreshIntervalId) clearInterval(this.refreshIntervalId);
+  },
+
+  // Vue 2 compatibility
+  beforeDestroy() {
+    if (this.refreshIntervalId) clearInterval(this.refreshIntervalId);
   },
 };
 </script>
@@ -216,6 +259,37 @@ button {
   gap: 0.5rem;
   align-items: center;
   margin-bottom: 0.5rem;
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+}
+.filter-field-label {
+  font-size: 0.75rem;
+  color: #335;
+  margin-bottom: 0.2rem;
+  font-weight: 700;
+}
+
+.admin-badge {
+  display: inline-block;
+  background: #e8f4ff;
+  color: #0b3b9a;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-weight: 700;
+  margin: 0.4rem 0 0.6rem 0;
+}
+
+.user-badge {
+  display: inline-block;
+  background: #fff6e6;
+  color: #6a4a00;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  font-weight: 600;
+  margin: 0.4rem 0 0.6rem 0;
 }
 
 .filter-input {

@@ -37,6 +37,37 @@ curl -X POST http://localhost:8000/api/register \
   -d '{"name":"Pablo","email":"pablo@example.com","password":"secret"}'
 ```
 
+5. Tornar um usuário administrador (opcional)
+
+Se você quiser marcar um usuário como administrador (para testar permissões de alteração de status), existe uma forma simples usando o Tinker do Laravel.
+
+- Usando Docker (interativo):
+
+```bash
+docker compose exec backend php artisan tinker
+# no prompt do tinker execute:
+App\Models\User::where('email', 'pablo@example.com')->update(['is_admin' => true]);
+exit
+```
+
+- Usando Docker (não interativo):
+
+```bash
+echo "App\\Models\\User::where('email','pablo@example.com')->update(['is_admin'=>true]);" | docker compose exec -T backend php artisan tinker
+```
+
+- Sem Docker (no host, dentro da pasta `backend`):
+
+```bash
+cd backend
+php artisan tinker
+# no prompt do tinker execute:
+App\Models\User::where('email', 'pablo@example.com')->update(['is_admin' => true]);
+exit
+```
+
+Após isso, faça login com o usuário e o campo `is_admin` deverá permitir as ações de administrador na interface.
+
 Comandos de desenvolvimento (sem Docker):
 
 Backend:

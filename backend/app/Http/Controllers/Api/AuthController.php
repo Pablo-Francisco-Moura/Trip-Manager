@@ -16,6 +16,8 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:6',
         ]);
+        // normalize email to avoid duplicates with different case/whitespace
+        $data['email'] = strtolower(trim($data['email']));
 
         $user = User::create([
             'name' => $data['name'],
@@ -35,7 +37,9 @@ class AuthController extends Controller
             'password' => 'required|string',
         ]);
 
-        $user = User::where('email', $data['email'])->first();
+        // normalize email for lookup
+        $email = strtolower(trim($data['email']));
+        $user = User::where('email', $email)->first();
 
         if (! $user || ! Hash::check($data['password'], $user->password)) {
             return response()->json(['message' => 'Credenciais inválidas'], 401);

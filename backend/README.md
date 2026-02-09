@@ -82,6 +82,7 @@ Authorization: Bearer <token>
 - `POST /api/travel-requests` — criar pedido (autenticado)
 - `GET /api/travel-requests/{id}` — detalhes do pedido (autenticado, dono do pedido)
 - `PATCH /api/travel-requests/{id}/status` — atualizar status (autenticado, somente admin)
+- `POST /api/users/{id}/make-admin` — marcar usuário como administrador (autenticado, somente admin)
 
 Detalhes de cada endpoint
 

@@ -53,4 +53,12 @@ class User extends Authenticatable
         'password' => 'hashed',
         'is_admin' => 'boolean',
     ];
+
+    /**
+     * Ensure emails are stored normalized (lowercase, trimmed)
+     */
+    public function setEmailAttribute($value)
+    {
+        $this->attributes['email'] = strtolower(trim($value));
+    }
 }
