@@ -1,0 +1,76 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreTravelRequest;
+use App\Http\Requests\UpdateTravelRequestStatus;
+use App\Models\TravelRequest;
+use App\Notifications\TravelRequestStatusChanged;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+
+class TravelRequestController extends Controller
+{
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        $query = TravelRequest::query()->where('user_id', $user->id);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('destination')) {
+            $query->where('destination', 'like', '%'.$request->input('destination').'%');
+        }
+
+        if ($request->filled('from') && $request->filled('to')) {
+            $query->whereBetween('departure_date', [$request->input('from'), $request->input('to')]);
+        }
+
+        return response()->json($query->paginate(15));
+    }
+
+    public function show(Request $request, TravelRequest $travelRequest)
+    {
+        if ($request->user()->id !== $travelRequest->user_id) {
+            return response()->json(['message' => 'Não autorizado'], 403);
+        }
+
+        return response()->json($travelRequest);
+    }
+
+    public function store(StoreTravelRequest $request)
+    {
+        $data = $request->validated();
+        $data['user_id'] = $request->user()->id;
+
+        $travel = TravelRequest::create($data);
+
+        return response()->json($travel, 201);
+    }
+
+    public function updateStatus(UpdateTravelRequestStatus $request, TravelRequest $travelRequest)
+    {
+        $user = $request->user();
+
+        if (! $user->is_admin) {
+            return response()->json(['message' => 'Somente administradores podem alterar o status.'], 403);
+        }
+
+        $newStatus = $request->input('status');
+
+        if ($newStatus === 'canceled' && $travelRequest->status === 'approved') {
+            return response()->json(['message' => 'Não é possível cancelar um pedido já aprovado.'], 422);
+        }
+
+        $travelRequest->status = $newStatus;
+        $travelRequest->save();
+
+        $travelRequest->user->notify(new TravelRequestStatusChanged($travelRequest));
+
+        return response()->json($travelRequest);
+    }
+}
