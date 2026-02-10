@@ -426,7 +426,7 @@ button {
 }
 .filter-field-label {
   font-size: 0.75rem;
-  color: #335;
+  color: var(--muted, #335);
   margin-bottom: 0.2rem;
   font-weight: 700;
 }
@@ -454,15 +454,17 @@ button {
 .filter-input {
   padding: 0.45rem 0.6rem;
   border-radius: 8px;
-  border: 1px solid #e6eefc;
-  background: #fff;
+  border: 1px solid var(--table-head, #e6eefc);
+  background: var(--card, #fff);
+  color: var(--fg, #123a8a);
   font-weight: 600;
 }
 .date-input {
   padding: 0.35rem 0.5rem;
   border-radius: 8px;
-  border: 1px solid #e6eefc;
-  background: #fff;
+  border: 1px solid var(--table-head, #e6eefc);
+  background: var(--card, #fff);
+  color: var(--fg, #123a8a);
 }
 .filter-actions {
   display: flex;
@@ -475,15 +477,15 @@ button {
 .filter-select {
   padding: 0.45rem 0.7rem;
   border-radius: 8px;
-  border: 1px solid #d7e3ff;
-  background: linear-gradient(180deg, #f8fbff, #eef6ff);
+  border: 1px solid var(--table-head, #d7e3ff);
+  background: var(--card, linear-gradient(180deg, #f8fbff, #eef6ff));
   cursor: pointer;
   font-weight: 600;
-  color: #123a8a;
+  color: var(--fg, #123a8a);
 }
 .filter-row label {
   font-weight: 700;
-  color: #123a8a;
+  color: var(--primary, #123a8a);
 }
 .table-wrap {
   overflow-x: auto;
@@ -491,15 +493,15 @@ button {
 .styled-table {
   width: 100%;
   border-collapse: collapse;
-  border: 1px solid #e8eefc;
-  background: #fff;
+  border: 1px solid var(--table-head, #e8eefc);
+  background: var(--card, #fff);
 }
 .styled-table thead {
-  background: #f4f8ff;
+  background: var(--table-head, #f4f8ff);
 }
 .styled-table th {
   padding: 0.6rem;
-  color: #123a8a;
+  color: var(--primary, #123a8a);
   font-weight: 600;
 }
 .styled-table td {
@@ -601,7 +603,7 @@ button {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(18, 58, 138, 0.35);
+  background: rgba(0, 0, 0, 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -611,14 +613,16 @@ button {
 .modal-card {
   max-width: 520px;
   width: 100%;
-  background: #fff;
+  background: var(--card, #fff);
+  color: var(--fg, #213547);
   border-radius: 10px;
   padding: 1rem 1.25rem;
-  box-shadow: 0 14px 40px rgba(33, 53, 71, 0.18);
+  box-shadow: 0 18px 48px rgba(11, 38, 72, 0.22);
+  border: 1px solid rgba(0, 0, 0, 0.04);
 }
 .modal-card h4 {
   margin: 0 0 0.6rem 0;
-  color: #123a8a;
+  color: var(--primary, #123a8a);
 }
 .modal-body p {
   margin: 0.25rem 0;
@@ -628,7 +632,7 @@ button {
   text-align: right;
 }
 .action-btn.view {
-  background: #6b7280;
-  color: #fff;
+  background: var(--muted, #6b7280);
+  color: var(--bg, #fff);
 }
 </style>

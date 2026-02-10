@@ -167,12 +167,13 @@ export default {
 
 <style scoped>
 .trip-form {
-  margin-bottom: 1rem;
+  margin: 1rem auto 1.5rem;
   max-width: 700px;
-  background: #fafafa;
-  border: 1px solid #eee;
+  background: var(--card, #fafafa);
+  border: 1px solid var(--table-head, #eee);
   padding: 1rem;
   border-radius: 8px;
+  color: var(--fg, #213547);
 }
 
 /* Ensure elements calculate widths including padding/borders to avoid overflow */
@@ -197,14 +198,16 @@ export default {
 }
 .form-label {
   font-size: 0.85rem;
-  color: #555;
+  color: var(--muted, #555);
   margin-bottom: 0.25rem;
 }
 .form-input {
   padding: 0.5rem;
-  border: 1px solid #d0d0d0;
+  border: 1px solid var(--table-head, #d0d0d0);
   border-radius: 6px;
   font-size: 0.95rem;
+  background: var(--bg, #fff);
+  color: var(--fg, #213547);
 }
 .form-actions {
   grid-column: 1 / -1;
@@ -215,8 +218,8 @@ export default {
 }
 .btn {
   padding: 0.5rem 0.8rem;
-  background: #2b7cff;
-  color: white;
+  background: var(--primary, #2b7cff);
+  color: var(--bg, #fff);
   border: none;
   border-radius: 6px;
   cursor: pointer;
@@ -226,7 +229,7 @@ export default {
   cursor: not-allowed;
 }
 .message {
-  color: #333;
+  color: var(--fg, #333);
   font-size: 0.95rem;
 }
 .loading {

@@ -70,13 +70,14 @@ export default {
   justify-content: center;
   gap: 0.5rem;
   padding: 2.5rem 1rem;
+  min-height: 80vh;
 }
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: #ffffff;
-  border: 1px solid #eef4ff;
-  box-shadow: 0 6px 18px rgba(33, 53, 71, 0.06);
+  background: var(--card, #ffffff);
+  border: 1px solid var(--table-head, #eef4ff);
+  box-shadow: 0 6px 18px rgba(11, 38, 72, 0.06);
   padding: 1.5rem;
   border-radius: 12px;
 }
@@ -84,13 +85,13 @@ export default {
   margin: 0 0 1rem 0;
   font-size: 1.25rem;
   font-weight: 800;
-  color: #123a8a;
+  color: var(--primary, #123a8a);
 }
 .brand {
   text-align: center;
   font-size: 1.6rem;
   font-weight: 900;
-  color: #123a8a;
+  color: var(--primary, #123a8a);
   margin-bottom: 0.6rem;
 }
 .login-form .field {
@@ -101,12 +102,14 @@ export default {
 .field-label {
   font-weight: 700;
   margin-bottom: 0.35rem;
-  color: #213547;
+  color: var(--fg, #213547);
 }
 .field-input {
   padding: 0.55rem 0.6rem;
   border-radius: 8px;
-  border: 1px solid #d7e3ff;
+  border: 1px solid var(--table-head, #d7e3ff);
+  background: var(--bg, #fff);
+  color: var(--fg, #213547);
   font-weight: 600;
   box-sizing: border-box;
 }
@@ -115,8 +118,8 @@ export default {
   justify-content: flex-end;
 }
 .btn {
-  background: linear-gradient(180deg, #2b7cff, #1a5fe0);
-  color: #fff;
+  background: var(--primary, #2b7cff);
+  color: var(--bg, #fff);
   border: none;
   padding: 0.55rem 0.9rem;
   border-radius: 8px;
@@ -128,7 +131,7 @@ export default {
   cursor: not-allowed;
 }
 .error {
-  color: #c0392b;
+  color: var(--danger, #c0392b);
   margin-top: 0.75rem;
   font-weight: 600;
 }

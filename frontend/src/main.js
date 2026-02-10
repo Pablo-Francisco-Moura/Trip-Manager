@@ -12,4 +12,8 @@ axios.defaults.baseURL = apiBase;
 const token = localStorage.getItem("token");
 if (token) axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
+// Initialize theme from localStorage
+const savedTheme = localStorage.getItem("theme");
+if (savedTheme === "dark") document.documentElement.classList.add("theme-dark");
+
 createApp(App).use(router).mount("#app");
