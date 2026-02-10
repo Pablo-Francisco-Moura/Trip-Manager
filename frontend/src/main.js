@@ -2,6 +2,7 @@ import { createApp } from "vue";
 import App from "./App.vue";
 import router from "./router";
 import axios from "axios";
+import i18n from "./i18n";
 
 const apiBase =
   (import.meta.env && import.meta.env.VITE_API_BASE_URL) ||
@@ -16,4 +17,4 @@ if (token) axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 const savedTheme = localStorage.getItem("theme");
 if (savedTheme === "dark") document.documentElement.classList.add("theme-dark");
 
-createApp(App).use(router).mount("#app");
+createApp(App).use(router).use(i18n).mount("#app");

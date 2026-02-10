@@ -1,9 +1,9 @@
 <template>
   <div class="trip-form">
-    <h3>Create Request</h3>
+    <h3>{{ $t("create_request") }}</h3>
     <form @submit.prevent="submit" :class="{ loading: loading }" class="form">
       <div class="form-row">
-        <label class="form-label">Requester</label>
+        <label class="form-label">{{ $t("requester") }}</label>
         <input
           class="form-input"
           :value="requester_name"
@@ -14,7 +14,7 @@
       </div>
 
       <div class="form-row">
-        <label class="form-label">Destination</label>
+        <label class="form-label">{{ $t("destination") }}</label>
         <input
           class="form-input"
           v-model="destination"
@@ -24,7 +24,7 @@
       </div>
 
       <div class="form-row">
-        <label class="form-label">Departure</label>
+        <label class="form-label">{{ $t("departure") }}</label>
         <input
           class="form-input"
           v-model="departure_date"
@@ -36,7 +36,7 @@
       </div>
 
       <div class="form-row">
-        <label class="form-label">Return</label>
+        <label class="form-label">{{ $t("return") }}</label>
         <input
           class="form-input"
           v-model="return_date"
@@ -48,7 +48,7 @@
       </div>
 
       <div class="form-actions">
-        <button class="btn" type="submit">Create</button>
+        <button class="btn" type="submit">{{ $t("create") }}</button>
         <span class="message" v-if="message">{{ message }}</span>
       </div>
     </form>

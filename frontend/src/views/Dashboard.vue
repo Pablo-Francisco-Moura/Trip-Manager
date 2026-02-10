@@ -15,7 +15,19 @@
             <span class="icon moon" aria-hidden="true">🌙</span>
             <span class="knob"></span>
           </div>
-          <button class="logout-btn" @click="logout">Logout</button>
+          <div
+            class="lang-switch"
+            :data-locale="locale"
+            role="switch"
+            :aria-checked="locale === 'en'"
+            @click="toggleLocale"
+            title="Change language"
+          >
+            <span class="flag br" aria-hidden="true">🇧🇷</span>
+            <span class="flag us" aria-hidden="true">🇺🇸</span>
+            <span class="knob"></span>
+          </div>
+          <button class="logout-btn" @click="logout">{{ $t("logout") }}</button>
         </div>
       </div>
     </div>
@@ -36,7 +48,7 @@ import Toast from "../components/Toast.vue";
 export default {
   components: { TravelRequestForm, TravelRequestsTable, Toast },
   data() {
-    return { theme: "light" };
+    return { theme: "light", locale: "" };
   },
   methods: {
     toggleTheme() {
@@ -52,6 +64,17 @@ export default {
     reload() {
       this.$refs.table.fetch();
     },
+    toggleLocale() {
+      const next = this.locale === "en" ? "pt" : "en";
+      this.locale = next;
+      if (this.$setLocale) this.$setLocale(next);
+      else {
+        localStorage.setItem("locale", next);
+        window.dispatchEvent(
+          new CustomEvent("pref:localeChange", { detail: next }),
+        );
+      }
+    },
     logout() {
       auth.logout();
       this.$router.push("/login");
@@ -62,6 +85,15 @@ export default {
     this.theme = t === null ? "light" : t;
     if (this.theme === "dark")
       document.documentElement.classList.add("theme-dark");
+    // prefer i18n plugin state when available, otherwise fallback to saved locale
+    if (this.$locale && this.$locale.locale) this.locale = this.$locale.locale;
+    else {
+      const l = localStorage.getItem("locale");
+      this.locale = l === null ? this.locale || "pt" : l;
+    }
+    window.addEventListener("pref:localeChange", (e) => {
+      this.locale = e.detail;
+    });
   },
 };
 </script>
@@ -174,5 +206,52 @@ export default {
   padding: 1rem;
   max-width: 1100px;
   margin: 0 auto;
+}
+
+/* Language switch (flags) */
+.lang-switch {
+  width: 56px;
+  height: 28px;
+  border-radius: 999px;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px;
+  box-sizing: border-box;
+  background: transparent !important;
+  border: 1px solid var(--primary);
+  cursor: pointer;
+}
+.lang-switch .flag {
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+}
+.lang-switch .flag.br {
+  margin-left: 4px;
+}
+.lang-switch .flag.us {
+  margin-left: auto;
+  margin-right: 4px;
+}
+.lang-switch .knob {
+  position: absolute;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  transition: transform 160ms ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.lang-switch[data-locale="en"] .knob {
+  transform: translateX(28px);
+}
+.lang-switch[data-locale="en"] .flag.us {
+  transform: scale(1.7);
+  margin-bottom: 0.3rem;
+}
+.lang-switch[data-locale="pt"] .flag.br {
+  transform: scale(1.7);
+  margin-bottom: 0.3rem;
 }
 </style>

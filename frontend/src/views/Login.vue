@@ -2,10 +2,10 @@
   <div class="login-wrap">
     <div class="brand">Trip Manager</div>
     <div class="login-card">
-      <h2 class="login-title">Login</h2>
+      <h2 class="login-title">{{ $t("login") }}</h2>
       <form @submit.prevent="submit" class="login-form">
         <div class="field">
-          <label class="field-label">Email</label>
+          <label class="field-label">{{ $t("email") }}</label>
           <input
             class="field-input"
             v-model="email"
@@ -14,7 +14,7 @@
           />
         </div>
         <div class="field">
-          <label class="field-label">Password</label>
+          <label class="field-label">{{ $t("password") }}</label>
           <input
             class="field-input"
             v-model="password"
@@ -24,7 +24,7 @@
         </div>
         <div class="actions">
           <button class="btn" :disabled="loading" type="submit">
-            {{ loading ? "Logging..." : "Login" }}
+            {{ loading ? $t("logging") : $t("login_button") }}
           </button>
         </div>
       </form>

@@ -1,7 +1,7 @@
 <template>
   <div class="requests-table">
     <div class="requests-header">
-      <h3>Requests</h3>
+      <h3>{{ $t("requests") }}</h3>
       <button
         class="create-btn"
         :title="showCreateForm ? 'Fechar formulário' : 'Criar nova requisição'"
@@ -13,10 +13,10 @@
     </div>
     <div class="user-info-row">
       <div v-if="isAdmin" class="admin-badge">
-        Você é administrador — pode alterar o status das requisições
+        {{ $t("admin_info") }}
       </div>
       <div v-else class="user-badge">
-        Você não é administrador — apenas pode visualizar seus pedidos
+        {{ $t("user_info") }}
       </div>
     </div>
     <div v-if="showCreateForm" class="create-form-wrap">
@@ -24,20 +24,22 @@
     </div>
 
     <div class="filter-row">
-      <label>Filter:</label>
+      <label>{{ $t("filters") }}</label>
       <select class="filter-select" v-model="filterStatus">
-        <option value="">All</option>
-        <option value="requested">Requested</option>
-        <option value="approved">Approved</option>
-        <option value="canceled">Canceled</option>
+        <option value="">
+          {{ $t("all") }}
+        </option>
+        <option value="requested">{{ $t("requested") }}</option>
+        <option value="approved">{{ $t("approved") }}</option>
+        <option value="canceled">{{ $t("canceled") }}</option>
       </select>
       <input
         class="filter-input"
         v-model="destinationFilter"
-        placeholder="Destination"
+        :placeholder="$t('destination')"
       />
       <div class="filter-field">
-        <label class="filter-field-label">Data de ida</label>
+        <label class="filter-field-label">{{ $t("departure") }}</label>
         <input
           class="date-input"
           type="date"
@@ -48,7 +50,7 @@
         />
       </div>
       <div class="filter-field">
-        <label class="filter-field-label">Data de volta</label>
+        <label class="filter-field-label">{{ $t("return") }}</label>
         <input
           class="date-input"
           type="date"
@@ -59,8 +61,8 @@
         />
       </div>
       <div class="filter-actions">
-        <button class="btn" @click="applyFilters">Apply</button>
-        <button class="btn" @click="clearFilters">Clear</button>
+        <button class="btn" @click="applyFilters">{{ $t("apply") }}</button>
+        <button class="btn" @click="clearFilters">{{ $t("clear") }}</button>
       </div>
     </div>
 
@@ -71,12 +73,12 @@
         <thead>
           <tr>
             <th>ID</th>
-            <th>Requester</th>
-            <th>Destination</th>
-            <th>Departure</th>
-            <th>Return</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>{{ $t("requester") }}</th>
+            <th>{{ $t("destination") }}</th>
+            <th>{{ $t("departure") }}</th>
+            <th>{{ $t("return") }}</th>
+            <th>{{ $t("status") }}</th>
+            <th>{{ $t("actions") }}</th>
           </tr>
         </thead>
         <tbody>
@@ -90,7 +92,7 @@
             <td data-label="Return">{{ formatDate(r.return_date) }}</td>
             <td data-label="Status">
               <span :class="['status-chip', 'status-' + (r.status || '')]">
-                {{ r.status }}
+                {{ $t(r.status) }}
               </span>
             </td>
             <td data-label="Actions">
@@ -100,19 +102,19 @@
                   :disabled="updatingId === r.id || r.status === 'approved'"
                   class="action-btn approve"
                 >
-                  {{ updatingId === r.id ? "Updating..." : "Approve" }}
+                  {{ updatingId === r.id ? $t("apply") : $t("approve") }}
                 </button>
                 <button
                   @click="openConfirm(r.id, 'canceled')"
                   :disabled="updatingId === r.id || r.status === 'approved'"
-                  title="Não é possível cancelar um pedido aprovado"
+                  :title="$t('cannot_cancel_approved')"
                   class="action-btn cancel"
                 >
-                  {{ updatingId === r.id ? "Updating..." : "Cancel" }}
+                  {{ updatingId === r.id ? $t("apply") : $t("cancel") }}
                 </button>
               </template>
               <button class="action-btn view" @click="viewRequest(r.id)">
-                View
+                {{ $t("view") }}
               </button>
             </td>
           </tr>
@@ -122,41 +124,55 @@
     <!-- Modal for viewing details -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal-card">
-        <h4>Request #{{ modalData.id }}</h4>
+        <h4>{{ $t("request") }} #{{ modalData.id }}</h4>
         <div class="modal-body">
-          <p><strong>Requester:</strong> {{ modalData.requester_name }}</p>
-          <p><strong>Destination:</strong> {{ modalData.destination }}</p>
           <p>
-            <strong>Departure:</strong>
+            <strong>{{ $t("requester") }}:</strong>
+            {{ modalData.requester_name }}
+          </p>
+          <p>
+            <strong>{{ $t("destination") }}:</strong>
+            {{ modalData.destination }}
+          </p>
+          <p>
+            <strong>{{ $t("departure") }}:</strong>
             {{ formatDate(modalData.departure_date) }}
           </p>
           <p>
-            <strong>Return:</strong> {{ formatDate(modalData.return_date) }}
+            <strong>{{ $t("return") }}:</strong>
+            {{ formatDate(modalData.return_date) }}
           </p>
-          <p><strong>Status:</strong> {{ modalData.status }}</p>
+          <p>
+            <strong>{{ $t("status") }}:</strong>
+
+            {{ $t(modalData.status) }}
+          </p>
           <p v-if="modalData.created_at">
-            <strong>Created:</strong> {{ formatDate(modalData.created_at) }}
+            <strong>{{ $t("created_at") }}:</strong>
+            {{ formatDate(modalData.created_at) }}
           </p>
         </div>
         <div class="modal-actions">
-          <button class="btn" @click="closeModal">Close</button>
+          <button class="btn" @click="closeModal">{{ $t("close") }}</button>
         </div>
       </div>
     </div>
     <!-- Confirmation modal for approve/cancel -->
     <div v-if="confirmVisible" class="modal-overlay" @click.self="closeConfirm">
       <div class="modal-card">
-        <h4>Confirmação</h4>
+        <h4>{{ $t("confirmation") }}</h4>
         <div class="modal-body">
           <p>
-            Tem certeza que deseja <strong>{{ confirmData.status }}</strong> o
-            pedido #{{ confirmData.id }}?
+            {{ $t("confirm") }} <strong>{{ $t(confirmData.status) }}</strong
+            >? #{{ confirmData.id }}
           </p>
         </div>
         <div class="modal-actions">
-          <button class="btn" @click="confirmExecute">Confirmar</button>
+          <button class="btn" @click="confirmExecute">
+            {{ $t("confirm") }}
+          </button>
           <button class="btn" @click="closeConfirm" style="margin-left: 0.5rem">
-            Cancelar
+            {{ $t("cancel_action") }}
           </button>
         </div>
       </div>
@@ -536,7 +552,7 @@ button {
   color: #5a3b00;
 }
 .status-approved {
-  background: #2b7cff; /* blue */
+  background: var(--success, #28a745); /* green */
   color: #fff;
 }
 .status-canceled {
